@@ -18,6 +18,7 @@ public:
     QString alterid;
     QString security;
     int isCustom;
+    int subId;
     vConfig *query(int id);
     int save();
     void getConfigFromDialog(Ui::ConfEdit *ui);

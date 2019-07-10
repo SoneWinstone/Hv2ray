@@ -8,6 +8,8 @@
 #include <QMenu>
 #include <QScrollBar>
 
+#include "subscribeeditor.h"
+
 class v2Instance;
 namespace Ui
 {
@@ -26,12 +28,18 @@ public:
     QMenu *popMenu = new QMenu(this);
     QScrollBar *bar;
     ~MainWindow();
+
+private:
+    void closeEvent(QCloseEvent *);
+    void createTrayAction();
+    void init();
     
 public slots:
     void on_restartButton_clicked();
 
 private slots:
     void on_actionEdit_triggered();
+    void on_actionSubscribe_triggered();
     void on_actionExisting_config_triggered();
     void updateConfTable();
     void delConf();
@@ -54,8 +62,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    void closeEvent(QCloseEvent *);
-    void createTrayAction();
+    subscribeeditor *subscriber;
 
 };
 

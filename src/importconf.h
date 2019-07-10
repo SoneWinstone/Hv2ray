@@ -14,7 +14,13 @@ class importConf : public QDialog
 
 public:
     explicit importConf(QWidget *parent = nullptr);
-    void savefromFile(QString path, QString alias);
+    /**
+     * @brief savefromFile
+     * @param path
+     * @param alias
+     * @param subId subscribe id
+     */
+    void savefromFile(QString path, QString alias, const int subId = 0);
     ~importConf();
 
 private slots:

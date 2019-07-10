@@ -27,7 +27,7 @@ ConfEdit::~ConfEdit()
 vConfig *vConfig::query(int id)
 {
     QString selectQuery = "select * from confs where id = " + QString::number(id) + ";";
-    db myDb = db();
+    DB myDb = DB();
     myDb.query(selectQuery);
     myDb.myQuery.first();
     this->host = myDb.myQuery.value(1).toString();
@@ -39,6 +39,7 @@ vConfig *vConfig::query(int id)
     this->isCustom = myDb.myQuery.value(7).toInt();
     return this;
 }
+
 int vConfig::save()
 {
     QSqlDatabase database;
@@ -53,7 +54,7 @@ int vConfig::save()
         return -1;
     }
     QSqlQuery myQuery(database);
-    myQuery.prepare("insert into confs (host, port, alias, uuid, alterid, security, isCustom, selected) values(:host, :port, :alias, :uuid, :alterid, :security, :isCustom, :selected)");
+    myQuery.prepare("insert into confs (host, port, alias, uuid, alterid, security, isCustom, selected, subscribe_id) values(:host, :port, :alias, :uuid, :alterid, :security, :isCustom, :selected, :subId)");
     myQuery.bindValue(":host", this->host);
     myQuery.bindValue(":port", this->port);
     myQuery.bindValue(":alias", this->alias);
@@ -62,6 +63,7 @@ int vConfig::save()
     myQuery.bindValue(":security", this->security);
     myQuery.bindValue(":isCustom", this->isCustom);
     myQuery.bindValue(":selected", 0);
+    myQuery.bindValue(":subId", this->subId);
     myQuery.exec();
     myQuery.exec("select last_insert_rowid();");
     myQuery.first();

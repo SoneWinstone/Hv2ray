@@ -1,3 +1,4 @@
+#include <iostream>
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QDebug>
@@ -9,6 +10,7 @@
 #include <QInputDialog>
 
 #include "db.h"
+#include "subscribeeditor.h"
 #include "vmess.h"
 #include "hvconf.h"
 #include "mainwindow.h"
@@ -47,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(rename, SIGNAL(triggered()), this, SLOT(renameRow()));
     connect(ui->logText, SIGNAL(textChanged()), this, SLOT(scrollToBottom()));
     bar = ui->logText->verticalScrollBar();
+
+    init();
 }
 
 MainWindow::~MainWindow()
@@ -62,12 +66,32 @@ void MainWindow::on_actionEdit_triggered()
     e->show();
 }
 
+void MainWindow::init()
+{
+    this->subscriber = new subscribeeditor(this);
+    this->subscriber->setWindowTitle(QString("订阅管理"));
+
+    connect(subscriber, &subscribeeditor::updateConfTableSignal, this, &MainWindow::updateConfTable);
+}
+
+/**
+ * 触发订阅按钮
+ *
+ * @author SoneWinstone jianwenzhen@qq.com
+ * @brief MainWindow::on_actionSubscribe_triggered
+ */
+void MainWindow::on_actionSubscribe_triggered()
+{
+    this->subscriber->show();
+}
+
 void MainWindow::on_actionExisting_config_triggered()
 {
     importConf *f = new importConf(this);
     f->setAttribute(Qt::WA_DeleteOnClose);
     f->show();
 }
+
 void MainWindow::showMenu(QPoint pos)
 {
     if(ui->configTable->indexAt(pos).column() != -1) {
@@ -75,6 +99,7 @@ void MainWindow::showMenu(QPoint pos)
         popMenu->show();
     }
 }
+
 void MainWindow::select_triggered()
 {
     int row = ui->configTable->selectionModel()->currentIndex().row();
@@ -87,18 +112,29 @@ void MainWindow::select_triggered()
 
 void MainWindow::delConf()
 {
-    int row = ui->configTable->selectionModel()->currentIndex().row();
-    int idIntable = ui->configTable->model()->data(ui->configTable->model()->index(row, 4)).toInt();
-    QString queryString = "delete from confs where id = " + QString::number(idIntable);
-    db myDb;
+    QModelIndexList list = ui->configTable->selectionModel()->selectedIndexes();
+    QStringList ids;
+    for (QModelIndex index : list) {
+        QString id = ui->configTable->model()->data(ui->configTable->model()->index(index.row(), 4)).toByteArray();
+        if (!ids.contains(id)) {
+            ids << id;
+        }
+    }
+
+    QString queryString = "delete from confs where id in (" + ids.join(',') + ")";
+    DB myDb;
     myDb.query(queryString);
-    QString rmFile = "conf/" + QString::number(idIntable) + ".conf";
-    QFile::remove(rmFile);
+    for (QString id : ids) {
+        QString rmFile = "conf/" + id + ".conf";
+        QFile::remove(rmFile);
+    }
+
     emit updateConfTable();
 }
+
 void MainWindow::updateConfTable()
 {
-    db myDb;
+    DB myDb;
     myDb.query("select COUNT(*) from confs;");
     myDb.myQuery.first();
     int rows = myDb.myQuery.value(0).toInt();
@@ -128,10 +164,11 @@ void MainWindow::updateConfTable()
         }
     }
 }
+
 void MainWindow::geneConf(int idIntable)
 {
     vConfig tmpConf;
-    db myDb;
+    DB myDb;
     myDb.query("update confs set selected = 0");
     QString queryString = "update confs set selected = 1 where id = " + QString::number(idIntable);
     myDb.query(queryString);
@@ -148,6 +185,7 @@ void MainWindow::geneConf(int idIntable)
         // TODO: Config generator
     }
 }
+
 void MainWindow::updateLog()
 {
     ui->logText->insertPlainText(this->v2Inst->v2Process->readAllStandardOutput());
@@ -284,7 +322,7 @@ void MainWindow::renameRow()
     QString text = QInputDialog::getText(this, "Rename config", "New name:", QLineEdit::Normal);
     int row = ui->configTable->currentIndex().row();
     int idIntable = ui->configTable->model()->data(ui->configTable->model()->index(row, 4)).toInt();
-    db mydb;
+    DB mydb;
     QString updateString = "update confs set alias = '" + text + "' where id = " + QString::number(idIntable);
     mydb.query(updateString);
     emit updateConfTable();

@@ -39,9 +39,15 @@ void firstRunCheck()
         QSqlQuery query(database);
         bool bsuccess =
             query.exec("create table confs(id INTEGER primary key AUTOINCREMENT, host char(50), port char(5), "
-                       "alias char(80), uuid char(36), alterid char(5), security char(12), isCustom int, selected int);");
+                       "alias char(80), uuid char(36), alterid char(5), security char(12), isCustom int, selected int, subscribe_id int default 0);");
         if(!bsuccess) {
-            qDebug() << "Failed to create table.";
+            qDebug() << "Failed to create table confs.";
+        }
+
+        bsuccess =
+            query.exec("create table subscribes(id INTEGER primary key AUTOINCREMENT, url char(128), name char(20));");
+        if(!bsuccess) {
+            qDebug() << "Failed to create table subscribes.";
         }
     }
 
@@ -84,7 +90,7 @@ void firstRunCheck()
 int main(int argc, char *argv[])
 {
     QApplication _qApp(argc, argv);
-    RunGuard guard("Hv2ray");
+    RunGuard guard("Hv2ray Debug");
      if(!guard.tryToRun()) {
          alterMessage("Already running", "Another instance of Hv2ray is already running!");
          return -1;

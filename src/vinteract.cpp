@@ -1,6 +1,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QProcess>
+#include <QDebug>
 #include <QDir>
 
 #include "utils.h"

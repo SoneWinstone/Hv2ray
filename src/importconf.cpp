@@ -30,10 +30,11 @@ void importConf::on_pushButton_clicked()
     ui->fileLinedit->setText(dir);
 }
 
-void importConf::savefromFile(QString path, QString alias)
+void importConf::savefromFile(QString path, QString alias, int subId)
 {
     vConfig newConf;
     newConf.alias = alias;
+    newConf.subId = subId;
     QFile configFile(path);
     if(!configFile.open(QIODevice::ReadOnly)) {
         qDebug() << "Couldn't open config json";
