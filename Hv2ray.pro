@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,7 +31,9 @@ SOURCES += \
         mainwindow.cpp \
     confedit.cpp \
     importconf.cpp \
+    src/HttpRequest.cpp \
     src/hvconf.cpp \
+    src/subscribeeditor.cpp \
     vinteract.cpp \
     db.cpp \
     vmess.cpp \
@@ -42,7 +44,9 @@ HEADERS += \
         mainwindow.h \
     confedit.h \
     importconf.h \
+    src/HttpRequest.h \
     src/hvconf.h \
+    src/subscribeeditor.h \
     vinteract.h \
     db.h \
     vmess.h \
@@ -54,11 +58,12 @@ FORMS += \
     confedit.ui \
     importconf.ui \
     src/hvconf.ui \
+    src/subscribeeditor.ui \
     vmess.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-INCLUDEPATH += /usr/include/python3.7m/
-LIBS += -lpython3.7m
+INCLUDEPATH += /usr/include/python3.6m/
+LIBS += -lpython3.6m
