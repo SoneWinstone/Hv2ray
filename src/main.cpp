@@ -16,6 +16,8 @@
 #include "mainwindow.h"
 #include "confedit.h"
 
+#include "config.h"
+
 void firstRunCheck()
 {
     if(!QDir("conf").exists()) {
@@ -68,7 +70,7 @@ void firstRunCheck()
         QJsonObject socks;
         socks.insert("settings", QJsonValue(settings));
         socks.insert("tag", "socks-in");
-        socks.insert("port", 1080);
+        socks.insert("port", SOCKS_PORT);
         socks.insert("listen", "127.0.0.1");
         socks.insert("protocol", "socks");
 
@@ -90,7 +92,11 @@ void firstRunCheck()
 int main(int argc, char *argv[])
 {
     QApplication _qApp(argc, argv);
+#ifdef DEBUG
     RunGuard guard("Hv2ray Debug");
+#else
+    RunGuard guard("Hv2ray");
+#endif
      if(!guard.tryToRun()) {
          alterMessage("Already running", "Another instance of Hv2ray is already running!");
          return -1;

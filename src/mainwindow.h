@@ -9,6 +9,7 @@
 #include <QScrollBar>
 
 #include "subscribeeditor.h"
+#include "config.h"
 
 class v2Instance;
 namespace Ui
@@ -38,6 +39,8 @@ public slots:
     void on_restartButton_clicked();
 
 private slots:
+    void onTimeout();
+    void changeNode();
     void on_actionEdit_triggered();
     void on_actionSubscribe_triggered();
     void on_actionExisting_config_triggered();
@@ -63,7 +66,11 @@ private slots:
 private:
     Ui::MainWindow *ui;
     subscribeeditor *subscriber;
-
+    int             iConfRows;
+    int             iCurRow;
+    QStringList     listStrIPs;
+    QString         strCmd = "curl -m 3 --retry 0 --socks5 127.0.0.1:" + QString::number(SOCKS_PORT) + " ";
+    int             iListIndex = 0;
 };
 
 #endif // MAINWINDOW_H

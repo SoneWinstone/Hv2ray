@@ -8,6 +8,9 @@
 #include <QCloseEvent>
 #include <QFileInfo>
 #include <QInputDialog>
+#include <QTimer>
+#include <QThread>
+#include <QProcess>
 
 #include "db.h"
 #include "subscribeeditor.h"
@@ -19,6 +22,7 @@
 #include "importconf.h"
 #include "vinteract.h"
 #include "utils.h"
+#include "config.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -72,6 +76,26 @@ void MainWindow::init()
     this->subscriber->setWindowTitle(QString("订阅管理"));
 
     connect(subscriber, &subscribeeditor::updateConfTableSignal, this, &MainWindow::updateConfTable);
+
+    this->iConfRows = ui->configTable->model()->rowCount();
+//    this->iCurRow = 0;
+
+    QTimer *pTimer = new QTimer(this);
+    connect(pTimer, &QTimer::timeout, this, &MainWindow::onTimeout);
+    pTimer->start(10 * 1000);
+
+    listStrIPs << "ip.gs";
+    listStrIPs << "www.youtube.com";
+    listStrIPs << "www.facebook.com";
+    listStrIPs << "www.pornhub.com";
+    listStrIPs << "www.baidu.com";
+    listStrIPs << "www.sina.com";
+    listStrIPs << "www.zhihu.com";
+    listStrIPs << "www.gitee.com";
+    listStrIPs << "www.github.com";
+    listStrIPs << "www.tencent.com";
+    listStrIPs << "www.juejin.im";
+    listStrIPs << "www.jianshu.com";
 }
 
 /**
@@ -158,6 +182,7 @@ void MainWindow::updateConfTable()
         model->setItem(i, 4, new QStandardItem(myDb.myQuery.value(0).toString()));
         if (myDb.myQuery.value(8).toInt() == 1) {
             model->setItem(i, 3, new QStandardItem("√"));
+            this->iCurRow = i;
         }
         if (i < rows - 1) {
             myDb.myQuery.next();
@@ -213,6 +238,37 @@ void MainWindow::on_restartButton_clicked()
 {
     on_stopButton_clicked();
     on_startButton_clicked();
+}
+
+void MainWindow::onTimeout()
+{
+//    QProcess process;
+//    process.start("curl -m 3 --retry 0 --socks5 127.0.0.1:7891 ip.gs");
+    iListIndex = (iListIndex + 1) % listStrIPs.length();
+    if(0 != QProcess::execute(strCmd + listStrIPs.at(iListIndex))) {
+        changeNode();
+        QThread::sleep(5);
+        onTimeout();
+    }
+#ifdef DEBUG
+    else {
+        qDebug() << ui->configTable->model()->data(ui->configTable->model()->index(this->iCurRow, 0)).toString() << " is ok";
+    }
+#endif
+}
+
+void MainWindow::changeNode()
+{
+    this->iCurRow = (this->iCurRow + 1) % this->iConfRows;
+    ui->configTable->model()->setData(ui->configTable->model()->index(this->iCurRow, 3), ("√"));
+    int idIntable = ui->configTable->model()->data(ui->configTable->model()->index(this->iCurRow, 4)).toInt();
+    this->geneConf(idIntable);
+    if(this->v2Inst->v2Process->state() == QProcess::Running) {
+        this->on_restartButton_clicked();
+    } else {
+        this->on_startButton_clicked();
+    }
+    ui->logText->append("Change node to " + ui->configTable->model()->data(ui->configTable->model()->index(this->iCurRow, 0)).toString() + "\n");
 }
 
 void MainWindow::on_clbutton_clicked()

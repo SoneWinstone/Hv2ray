@@ -45,6 +45,7 @@ HEADERS += \
     confedit.h \
     importconf.h \
     src/HttpRequest.h \
+    src/config.h \
     src/hvconf.h \
     src/subscribeeditor.h \
     vinteract.h \
